@@ -1,8 +1,12 @@
 import { Request, Response } from 'express'
 import querystring from 'querystring'
 import { CONFLUENCE_SCOPES } from '../constants/oauth'
+import axios from 'axios'
+import { exchangeCodeForToken } from '../utils/oauth'
 
 const redirectToAtlassian = (req: Request, res: Response) => {
+	console.log('hello')
+	// build the authorization URL
 	const query = querystring.stringify({
 		audience: 'api.atlassian.com',
 		client_id: process.env.CLIENT_ID,
@@ -16,5 +20,30 @@ const redirectToAtlassian = (req: Request, res: Response) => {
 	res.redirect(url)
 }
 
-const authController = { redirectToAtlassian }
+const handleOauthCallback = async (req: Request, res: Response): Promise<void> => {
+	console.log('hello')
+	// get code from query params
+	const code = req.query.code as string
+
+	if (!code) {
+		res.status(400).send('Missing authorization code')
+		return
+	}
+
+	try {
+		const { access_token, refresh_token, expires_in } = await exchangeCodeForToken(code)
+
+		res.status(200).json({
+			message: 'OAuth flow completed!',
+			access_token,
+			refresh_token,
+			expires_in,
+		})
+	} catch (error: any) {
+		console.error('OAuth error:', error.message)
+		res.status(500).json({ error: 'Failed to exchange code for token' })
+	}
+}
+
+const authController = { redirectToAtlassian, handleOauthCallback }
 export default authController

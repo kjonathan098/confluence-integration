@@ -1,8 +1,10 @@
-import exrpress from 'express'
+import express from 'express' // ✅ correct
 import authController from '../controllers/auth.controller'
 
-const authRouter = exrpress.Router()
+const authRouter = express.Router() // ✅ now express is defined
 
 authRouter.get('/redirect', authController.redirectToAtlassian)
+authRouter.get('/callback', authController.handleOauthCallback)
 
 export default authRouter
+ 

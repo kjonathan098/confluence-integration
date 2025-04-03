@@ -10,7 +10,7 @@ app.get('/', (req, res) => {
 	res.send('goodbye')
 })
 
-app.use('/api/auth', authRouter)
+app.use('/api/oauth', authRouter)
 
 app.listen(port, () => {
 	console.log(`now listening on port ${port}`)
