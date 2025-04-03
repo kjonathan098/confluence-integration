@@ -3,6 +3,7 @@ import querystring from 'querystring'
 import { CONFLUENCE_SCOPES } from '../constants/oauth'
 import axios from 'axios'
 import { exchangeCodeForToken } from '../utils/oauth'
+import { sendResponse } from '../utils/response'
 
 const redirectToAtlassian = (req: Request, res: Response) => {
 	// build the authorization URL
@@ -24,14 +25,14 @@ const handleOauthCallback = async (req: Request, res: Response): Promise<void> =
 	const code = req.query.code as string
 
 	if (!code) {
-		res.status(400).send('Missing authorization code')
+		sendResponse(res, 400, 'Missing authorization code')
 		return
 	}
 
 	try {
 		const { access_token, refresh_token, expires_in } = await exchangeCodeForToken(code)
 
-		res.status(200).json({
+		sendResponse(res, 200, {
 			message: 'OAuth flow completed!',
 			access_token,
 			refresh_token,
