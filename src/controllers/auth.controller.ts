@@ -5,7 +5,6 @@ import axios from 'axios'
 import { exchangeCodeForToken } from '../utils/oauth'
 
 const redirectToAtlassian = (req: Request, res: Response) => {
-	console.log('hello')
 	// build the authorization URL
 	const query = querystring.stringify({
 		audience: 'api.atlassian.com',
@@ -21,7 +20,6 @@ const redirectToAtlassian = (req: Request, res: Response) => {
 }
 
 const handleOauthCallback = async (req: Request, res: Response): Promise<void> => {
-	console.log('hello')
 	// get code from query params
 	const code = req.query.code as string
 
@@ -40,8 +38,10 @@ const handleOauthCallback = async (req: Request, res: Response): Promise<void> =
 			expires_in,
 		})
 	} catch (error: any) {
-		console.error('OAuth error:', error.message)
-		res.status(500).json({ error: 'Failed to exchange code for token' })
+		throw {
+			status: 500,
+			message: 'Failed to exchange code for token',
+		}
 	}
 }
 
