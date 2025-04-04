@@ -7,7 +7,8 @@ import { respondError, respondSuccess } from '../utils/respond'
 
 const redirectToAtlassian = (req: Request, res: Response) => {
 	if (!process.env.CLIENT_ID || !process.env.REDIRECT_URI) {
-		return respondError(res, 'Missing required environment variables')
+		respondError(res, 'Missing required environment variables')
+		return
 	}
 	// build the authorization URL
 	const query = querystring.stringify({
@@ -29,7 +30,9 @@ const handleOauthCallback = async (req: Request, res: Response): Promise<void> =
 
 	if (!code) {
 		respondError(res, 'Missing authorization code', 400)
+		respondError(res, 'Missing authorization code', 400)
 		return
+		// res.status(400).send('Missing authorization code')
 	}
 
 	try {

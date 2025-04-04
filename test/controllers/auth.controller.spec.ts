@@ -2,6 +2,7 @@ import { expect } from 'chai'
 import sinon, { SinonStub } from 'sinon'
 import authController from '../../src/controllers/auth.controller'
 import { Request, Response } from 'express'
+import * as oauthUtils from '../../src/utils/oauth'
 
 describe('authController.redirectToAtlassian', () => {
 	let res: Partial<Response>
@@ -108,5 +109,77 @@ describe('authController.redirectToAtlassian', () => {
 				message: sinon.match.string,
 			})
 		).to.be.true
+	})
+})
+
+describe('authController.handleOauthCallback', () => {
+	let req, res
+
+	afterEach(() => {
+		sinon.restore()
+	})
+
+	it('should return 400 if code is missing', async () => {
+		// Stub res.send + res.status
+		const jsonStub = sinon.stub()
+		const statusStub = sinon.stub().returns({ json: jsonStub })
+
+		req = { query: {} }
+		const res = { status: statusStub }
+
+		await authController.handleOauthCallback(req as Request, res as unknown as Response)
+		expect(
+			jsonStub.calledWithMatch({
+				success: false,
+				message: sinon.match.string,
+			})
+		).to.be.true
+	})
+
+	it('should return 200 and token data on success', async () => {
+		sinon.stub(oauthUtils, 'exchangeCodeForToken').resolves({
+			access_token: 'mock-access',
+			refresh_token: 'mock-refresh',
+			expires_in: 3600,
+		})
+
+		const jsonStub = sinon.stub()
+		const statusStub = sinon.stub().returns({ success: true, json: jsonStub })
+
+		let req: Partial<Request>
+		req = { query: { code: 'mock-code' } }
+		res = { status: statusStub }
+
+		await authController.handleOauthCallback(req as Request, res as unknown as Response)
+		expect(
+			jsonStub.calledWithMatch({
+				success: true,
+				data: {
+					message: 'OAuth flow completed!',
+					access_token: 'mock-access',
+					refresh_token: 'mock-refresh',
+					expires_in: 3600,
+				},
+			})
+		).to.be.true
+	})
+
+	it('should throw 500 error if token exchange fails', async () => {
+		sinon.stub(oauthUtils, 'exchangeCodeForToken').rejects(new Error('boom'))
+		const jsonStub = sinon.stub()
+		const statusStub = sinon.stub().returns({ json: jsonStub })
+
+		const req: Partial<Request> = { query: { code: 'mock-code' } }
+		const res = { status: statusStub }
+
+		try {
+			await authController.handleOauthCallback(req as Request, res as unknown as Response)
+			throw new Error('Expected error not thrown')
+		} catch (err) {
+			expect(err).to.deep.equal({
+				status: 500,
+				message: 'Failed to exchange code for token',
+			})
+		}
 	})
 })
