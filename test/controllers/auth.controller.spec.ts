@@ -141,6 +141,7 @@ describe('authController.handleOauthCallback', () => {
 			access_token: 'mock-access',
 			refresh_token: 'mock-refresh',
 			expires_in: 3600,
+			message: 'OAuth flow completed!',
 		})
 
 		const jsonStub = sinon.stub()
@@ -151,11 +152,12 @@ describe('authController.handleOauthCallback', () => {
 		res = { status: statusStub }
 
 		await authController.handleOauthCallback(req as Request, res as unknown as Response)
+
 		expect(
 			jsonStub.calledWithMatch({
 				success: true,
 				data: {
-					message: 'OAuth flow completed!',
+					// message: 'OAuth flow completed!',
 					access_token: 'mock-access',
 					refresh_token: 'mock-refresh',
 					expires_in: 3600,

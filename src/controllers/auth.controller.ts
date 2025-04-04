@@ -30,14 +30,12 @@ const handleOauthCallback = async (req: Request, res: Response): Promise<void> =
 
 	if (!code) {
 		respondError(res, 'Missing authorization code', 400)
-		respondError(res, 'Missing authorization code', 400)
 		return
-		// res.status(400).send('Missing authorization code')
 	}
 
 	try {
 		const { access_token, refresh_token, expires_in } = await exchangeCodeForToken(code)
-		const data = { access_token, refresh_token, expires_in }
+		const data = { access_token, refresh_token, expires_in, message: 'OAuth flow completed!' }
 		respondSuccess(res, data, 200)
 	} catch (error: any) {
 		throw {
