@@ -35,8 +35,9 @@ const handleOauthCallback = async (req: Request, res: Response): Promise<void> =
 
 	try {
 		const { access_token, refresh_token, expires_in } = await exchangeCodeForToken(code)
-		const data = { access_token, refresh_token, expires_in, message: 'OAuth flow completed!' }
-		respondSuccess(res, data, 200)
+		req.session.accessToken = access_token
+
+		respondSuccess(res, { message: 'OAuth flow completed!' }, 200)
 	} catch (error: any) {
 		throw {
 			status: 500,
@@ -47,3 +48,6 @@ const handleOauthCallback = async (req: Request, res: Response): Promise<void> =
 
 const authController = { redirectToAtlassian, handleOauthCallback }
 export default authController
+
+const testSession = {} as Express.Request['session']
+testSession.accessToken

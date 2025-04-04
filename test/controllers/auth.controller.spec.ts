@@ -3,6 +3,7 @@ import sinon, { SinonStub } from 'sinon'
 import authController from '../../src/controllers/auth.controller'
 import { Request, Response } from 'express'
 import * as oauthUtils from '../../src/utils/oauth'
+import '../../types/session' // ✅ now it's a real importable module
 
 describe('authController.redirectToAtlassian', () => {
 	let res: Partial<Response>
@@ -148,7 +149,12 @@ describe('authController.handleOauthCallback', () => {
 		const statusStub = sinon.stub().returns({ success: true, json: jsonStub })
 
 		let req: Partial<Request>
-		req = { query: { code: 'mock-code' } }
+		req = {
+			query: { code: 'mock-code' },
+			session: {
+				accessToken: 'abc',
+			} as any,
+		}
 		res = { status: statusStub }
 
 		await authController.handleOauthCallback(req as Request, res as unknown as Response)
@@ -157,10 +163,7 @@ describe('authController.handleOauthCallback', () => {
 			jsonStub.calledWithMatch({
 				success: true,
 				data: {
-					// message: 'OAuth flow completed!',
-					access_token: 'mock-access',
-					refresh_token: 'mock-refresh',
-					expires_in: 3600,
+					message: 'OAuth flow completed!',
 				},
 			})
 		).to.be.true
