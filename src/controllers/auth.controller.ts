@@ -6,6 +6,9 @@ import { exchangeCodeForToken } from '../utils/oauth'
 import { sendResponse } from '../utils/response'
 
 const redirectToAtlassian = (req: Request, res: Response) => {
+	if (!process.env.CLIENT_ID || !process.env.REDIRECT_URI) {
+		return res.status(500).send('Missing required environment variables')
+	}
 	// build the authorization URL
 	const query = querystring.stringify({
 		audience: 'api.atlassian.com',
