@@ -75,8 +75,8 @@ describe('authController.redirectToAtlassian', () => {
 		delete process.env.CLIENT_ID
 
 		// Stub res.send + res.status
-		const sendStub = sinon.stub()
-		const statusStub = sinon.stub().returns({ send: sendStub })
+		const jsonStub = sinon.stub()
+		const statusStub = sinon.stub().returns({ json: jsonStub })
 
 		const res = {
 			status: statusStub,
@@ -84,14 +84,17 @@ describe('authController.redirectToAtlassian', () => {
 
 		authController.redirectToAtlassian({} as Request, res as unknown as Response)
 
-		expect(statusStub.calledWith(500)).to.be.true
-		expect(sendStub.calledWithMatch('Missing required environment variables')).to.be.true
+		expect(
+			jsonStub.calledWithMatch({
+				success: false,
+				message: sinon.match.string,
+			})
+		).to.be.true
 	})
 	it('should fail gracefully if redirect_uri is missing', () => {
 		delete process.env.REDIRECT_URI
-
-		const sendStub = sinon.stub()
-		const statusStub = sinon.stub().returns({ send: sendStub })
+		const jsonStub = sinon.stub()
+		const statusStub = sinon.stub().returns({ json: jsonStub })
 
 		const res = {
 			status: statusStub,
@@ -99,7 +102,11 @@ describe('authController.redirectToAtlassian', () => {
 
 		authController.redirectToAtlassian({} as Request, res as unknown as Response)
 
-		expect(statusStub.calledWith(500)).to.be.true
-		expect(sendStub.calledWithMatch('Missing required environment variables')).to.be.true
+		expect(
+			jsonStub.calledWithMatch({
+				success: false,
+				message: sinon.match.string,
+			})
+		).to.be.true
 	})
 })

@@ -3,11 +3,11 @@ import querystring from 'querystring'
 import { CONFLUENCE_SCOPES } from '../constants/oauth'
 import axios from 'axios'
 import { exchangeCodeForToken } from '../utils/oauth'
-import { sendResponse } from '../utils/response'
+import { respondError, respondSuccess } from '../utils/respond'
 
 const redirectToAtlassian = (req: Request, res: Response) => {
 	if (!process.env.CLIENT_ID || !process.env.REDIRECT_URI) {
-		return res.status(500).send('Missing required environment variables')
+		return respondError(res, 'Missing required environment variables')
 	}
 	// build the authorization URL
 	const query = querystring.stringify({
@@ -28,19 +28,14 @@ const handleOauthCallback = async (req: Request, res: Response): Promise<void> =
 	const code = req.query.code as string
 
 	if (!code) {
-		sendResponse(res, 400, 'Missing authorization code')
+		respondError(res, 'Missing authorization code', 400)
 		return
 	}
 
 	try {
 		const { access_token, refresh_token, expires_in } = await exchangeCodeForToken(code)
-
-		sendResponse(res, 200, {
-			message: 'OAuth flow completed!',
-			access_token,
-			refresh_token,
-			expires_in,
-		})
+		const data = { access_token, refresh_token, expires_in }
+		respondSuccess(res, data, 200)
 	} catch (error: any) {
 		throw {
 			status: 500,
