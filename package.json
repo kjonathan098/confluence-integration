@@ -3,11 +3,13 @@
 	"version": "1.0.0",
 	"main": "index.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1",
+		"test": "mocha --require ts-node/register test/**/*.spec.ts",
 		"build": "rimraf dist && npx tsc",
 		"start": "node dist/index.js",
 		"predev": "npm run build",
-		"dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts"
+		"dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts",
+		"precoverage": "rm -rf coverage .nyc_output",
+		"coverage": "nyc npm test"
 	},
 	"keywords": [],
 	"author": "",
@@ -20,9 +22,16 @@
 		"rimraf": "^6.0.1"
 	},
 	"devDependencies": {
+		"@types/chai": "^5.2.1",
 		"@types/express": "^5.0.1",
+		"@types/mocha": "^10.0.10",
 		"@types/node": "^22.14.0",
+		"@types/sinon": "^17.0.4",
+		"chai": "^4.3.4",
+		"mocha": "^10.8.2",
 		"nodemon": "^3.1.9",
+		"nyc": "^17.1.0",
+		"sinon": "^20.0.0",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.8.2"
 	}
