@@ -2,6 +2,7 @@ import axios from 'axios'
 import express, { Request, Response } from 'express'
 import { AccessibleResource } from '../../types/confluence'
 import getAccessibleResources from '../utils/getAccessibleResources'
+import getUserSpaces from '../utils/getSpaces'
 
 const getSpaces = async (req: Request, res: Response) => {
 	// check if user is already logged in if not send them to confluence oath
@@ -22,26 +23,22 @@ const getSpacesPostman = async (req: Request, res: Response) => {
 		const site = accessibleRes[0]
 
 		if (!site) {
+			//TODO  use global res
 			res.status(404).json({ message: 'No accessible Confluence sites found' })
 			return
 		}
 
 		const cloudId = site.id
-		console.log(cloudId)
 
-		const spacesRes = await axios.get(`https://api.atlassian.com/ex/confluence/${cloudId}/wiki/rest/api/space`, {
-			headers: {
-				Authorization: `Bearer ${accessToken}`,
-				Accept: 'application/json',
-			},
-		})
+		const spaces = await getUserSpaces(accessToken, cloudId)
 
-		res.status(200).json(spacesRes.data)
-		return
-		res.send('goodbye')
+		//TODO USE GLOBBAL RESPOSNE
+		res.status(200).json(spaces)
 		return
 	} catch (err: any) {
-		console.error('❌ Error:', err.response?.data || err.message)
+		console.error('Error:', err.response?.data || err.message)
+
+		//TODO Use global resp
 		res.status(500).json({ message: 'Error fetching spaces', error: err.response?.data || err.message })
 	}
 }
