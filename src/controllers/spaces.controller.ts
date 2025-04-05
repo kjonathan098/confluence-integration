@@ -1,6 +1,7 @@
 import axios from 'axios'
 import express, { Request, Response } from 'express'
 import { AccessibleResource } from '../../types/confluence'
+import getAccessibleResources from '../utils/getAccessibleResources'
 
 const getSpaces = async (req: Request, res: Response) => {
 	// check if user is already logged in if not send them to confluence oath
@@ -17,14 +18,18 @@ const getSpacesPostman = async (req: Request, res: Response) => {
 
 	try {
 		// STEP 1: Get cloudId from Atlassian
-		const accessibleRes = await axios.get<AccessibleResource[]>('https://api.atlassian.com/oauth/token/accessible-resources', {
-			headers: {
-				Authorization: `Bearer ${accessToken}`,
-				Accept: 'application/json',
-			},
-		})
-		console.log(accessibleRes.data)
-		res.send(accessibleRes.data)
+		const accessibleRes = await getAccessibleResources(accessToken)
+		const site = accessibleRes[0]
+
+		if (!site) {
+			res.status(404).json({ message: 'No accessible Confluence sites found' })
+			return
+		}
+
+		const cloudId = site.id
+		console.log(cloudId)
+
+		res.send('goodbye')
 		return
 	} catch (err: any) {
 		console.error('❌ Error:', err.response?.data || err.message)
