@@ -3,12 +3,14 @@ import express from 'express'
 import authRouter from './routes/auth.route'
 import errorHandler from './middleware/errorHandler'
 import session from 'express-session'
+import spacesRouter from './routes/spaces.route'
 dotenv.config()
 
 declare module 'express-session' {
 	interface SessionData {
 		accessToken?: string
 		redirectAfterLogin?: string
+		refreshToken?: string
 	}
 }
 const port = 3000
@@ -25,6 +27,8 @@ app.use(
 )
 
 app.use('/api/oauth', authRouter)
+app.use('/api/spaces', spacesRouter)
+
 app.use(errorHandler)
 
 app.listen(port, () => {
