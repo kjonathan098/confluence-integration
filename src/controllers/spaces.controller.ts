@@ -29,6 +29,15 @@ const getSpacesPostman = async (req: Request, res: Response) => {
 		const cloudId = site.id
 		console.log(cloudId)
 
+		const spacesRes = await axios.get(`https://api.atlassian.com/ex/confluence/${cloudId}/wiki/rest/api/space`, {
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+				Accept: 'application/json',
+			},
+		})
+
+		res.status(200).json(spacesRes.data)
+		return
 		res.send('goodbye')
 		return
 	} catch (err: any) {
