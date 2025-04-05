@@ -1,7 +1,6 @@
 import { Request, Response } from 'express'
 import querystring from 'querystring'
 import { CONFLUENCE_SCOPES } from '../constants/oauth'
-import axios from 'axios'
 import { exchangeCodeForToken } from '../utils/oauth'
 import { respondError, respondSuccess } from '../utils/respond'
 
