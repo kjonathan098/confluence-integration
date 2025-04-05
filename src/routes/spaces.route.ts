@@ -4,7 +4,7 @@ import verifyUserInSession from '../middleware/verifyUserSession'
 
 const spacesRouter = express.Router()
 
-spacesRouter.get('/', spaceController.getSpaces)
+spacesRouter.get('/', verifyUserInSession, spaceController.getSpaces)
 spacesRouter.get('/postman', spaceController.getSpacesPostman)
 
 export default spacesRouter
