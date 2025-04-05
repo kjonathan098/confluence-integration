@@ -4,6 +4,7 @@ import express, { Request, Response } from 'express'
 const getSpaces = async (req: Request, res: Response) => {
 	// check if user is already logged in if not send them to confluence oath
 	console.log('hi there ')
+	res.send('hi')
 
 	// try {
 	// 	// Step 1: Get list of accessible Confluence cloud instances
