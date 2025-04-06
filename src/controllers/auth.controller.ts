@@ -43,10 +43,7 @@ const handleOauthCallback = async (req: Request, res: Response): Promise<void> =
 		// respondSuccess(res, { message: 'OAuth flow completed!' }, 200)
 	} catch (error: any) {
 		console.error('OAuth callback error:', error.response?.data || error.message || error)
-		throw {
-			status: 500,
-			message: 'Failed to exchange code for token',
-		}
+		respondError(res, 'Failed to exchange code for token', 500)
 	}
 }
 

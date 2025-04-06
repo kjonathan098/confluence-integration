@@ -5,6 +5,8 @@ import { Request, Response } from 'express'
 import * as oauthUtils from '../../src/utils/oauth'
 import '../../types/session'
 import { expectErrorResponse } from '../helpers/assertResponses'
+import { ErrorResponse } from '../../types/responseTypes'
+import { buildErrorResponseFormat } from '../../src/utils/respond'
 
 describe('authController.redirectToAtlassian', () => {
 	let res: Partial<Response>
@@ -152,22 +154,44 @@ describe('authController.handleOauthCallback', () => {
 			})
 		).to.be.true
 	})
-	it('should throw 500 error if token exchange fails', async () => {
-		sinon.stub(oauthUtils, 'exchangeCodeForToken').rejects(new Error('boom'))
+	// it.only('should throw 500 error if token exchange fails', async () => {
+	// 	sinon.stub(oauthUtils, 'exchangeCodeForToken').rejects(new Error('boom'))
+	// 	const jsonStub = sinon.stub()
+	// 	const statusStub = sinon.stub().returns({ json: jsonStub })
+
+	// 	const req: Partial<Request> = { query: { code: 'mock-code' } }
+	// 	const res = { status: statusStub }
+
+	// 	try {
+	// 		await authController.handleOauthCallback(req as Request, res as unknown as Response)
+	// 		throw new Error('Expected error not thrown')
+	// 	} catch (err: any) {
+	// 		console.log('errroro ->', err)
+	// 		// expect(true).to.be(true)
+	// 		// const parsed = JSON.parse(err.message)
+	// 		expect(err).to.be.instanceOf(Error)
+
+	// 		// expect(parsed).to.satisfy((obj: ErrorResponse) => sinon.match(expectErrorResponse).test(obj))
+	// 	}
+	// })
+	it('should respond with global error if exchangeCodeForToken fails', async () => {
+		// This simulates a failed token exchange
+		sinon.stub(oauthUtils, 'exchangeCodeForToken').rejects(new Error(buildErrorResponseFormat('Failed to exchange authorization code for access token')))
+
 		const jsonStub = sinon.stub()
 		const statusStub = sinon.stub().returns({ json: jsonStub })
 
-		const req: Partial<Request> = { query: { code: 'mock-code' } }
+		const req = { query: { code: 'mock-code' }, session: {} }
 		const res = { status: statusStub }
 
-		try {
-			await authController.handleOauthCallback(req as Request, res as unknown as Response)
-			throw new Error('Expected error not thrown')
-		} catch (err) {
-			expect(err).to.deep.equal({
-				status: 500,
-				message: 'Failed to exchange code for token',
-			})
-		}
+		await authController.handleOauthCallback(req as unknown as Request, res as unknown as Response)
+
+		expect(statusStub.calledWith(500)).to.be.true
+
+		const [actualError] = jsonStub.firstCall.args
+		expect(actualError).to.deep.equal({
+			success: false,
+			message: 'Failed to exchange code for token',
+		})
 	})
 })

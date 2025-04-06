@@ -30,45 +30,43 @@ const getSpaces = async (req: Request, res: Response) => {
 		respondSuccess(res, spaces, 200)
 	} catch (err: any) {
 		console.error('Error:', err.response?.data || err.message)
-
-		//TODO Use global resp
 		respondError(res, 'Error fetching spaces', 500)
 	}
 }
 
-const getSpacesPostman = async (req: Request, res: Response) => {
-	const accessToken = req.query.token as string
+// const getSpacesPostman = async (req: Request, res: Response) => {
+// 	const accessToken = req.query.token as string
 
-	if (!accessToken) {
-		respondError(res, 'access token not in query', 400)
-		return
-	}
+// 	if (!accessToken) {
+// 		respondError(res, 'access token not in query', 400)
+// 		return
+// 	}
 
-	try {
-		// STEP 1: Get cloudId from Atlassian
-		const accessibleRes = await getAccessibleResources(accessToken)
-		const site = accessibleRes[0]
+// 	try {
+// 		// STEP 1: Get cloudId from Atlassian
+// 		const accessibleRes = await getAccessibleResources(accessToken)
+// 		const site = accessibleRes[0]
 
-		if (!site) {
-			respondError(res, 'No accessible Confluence sites found', 404)
+// 		if (!site) {
+// 			respondError(res, 'No accessible Confluence sites found', 404)
 
-			return
-		}
+// 			return
+// 		}
 
-		const cloudId = site.id
+// 		const cloudId = site.id
 
-		const spaces = await getUserSpaces(accessToken, cloudId)
+// 		const spaces = await getUserSpaces(accessToken, cloudId)
 
-		//TODO USE GLOBBAL RESPOSNE
-		respondSuccess(res, spaces, 200)
-		return
-	} catch (err: any) {
-		console.error('Error:', err.response?.data || err.message)
+// 		//TODO USE GLOBBAL RESPOSNE
+// 		respondSuccess(res, spaces, 200)
+// 		return
+// 	} catch (err: any) {
+// 		console.error('Error:', err.response?.data || err.message)
 
-		//TODO Use global resp
-		respondError(res, 'Error fetching spaces', 500)
-	}
-}
+// 		//TODO Use global resp
+// 		respondError(res, 'Error fetching spaces', 500)
+// 	}
+// }
 
-const spaceController = { getSpaces, getSpacesPostman }
+const spaceController = { getSpaces }
 export default spaceController
