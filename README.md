@@ -34,10 +34,10 @@ npm install
 ```
 
 2. **Create .env file and add this vars**
-CLIENT_ID=your-atlassian-client-id
-CLIENT_SECRET=your-atlassian-client-secret
-REDIRECT_URI=http://localhost:3000/api/oauth/callback
-SESSION_SECRET=a-random-secret-key-for-session
+- CLIENT_ID=your-atlassian-client-id
+- CLIENT_SECRET=your-atlassian-client-secret
+- REDIRECT_URI=http://localhost:3000/api/oauth/callback
+- SESSION_SECRET=a-random-secret-key-for-session
 
 3. **Start Server**
 npm run dev
