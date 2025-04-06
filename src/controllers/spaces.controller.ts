@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express'
 import { AccessibleResource } from '../../types/confluence'
 import getAccessibleResources from '../utils/getAccessibleResources'
-import getUserSpaces from '../utils/getSpaces'
+import getUserSpaces from '../utils/getUserSpaces'
 import { respondError, respondSuccess } from '../utils/respond'
 
 const getSpaces = async (req: Request, res: Response) => {
