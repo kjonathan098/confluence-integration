@@ -45,3 +45,32 @@ export interface ConfluenceSpacesResponse {
 		self: string
 	}
 }
+
+export interface ConfluencePage {
+	id: string
+	title: string
+	type: string
+	status: string
+	body?: {
+		storage?: {
+			value: string
+			representation: string
+		}
+	}
+	_links: {
+		self: string
+		webui: string
+	}
+}
+
+export interface ConfluencePagesResponse {
+	results: ConfluencePage[]
+	start: number
+	limit: number
+	size: number
+	_links: {
+		base: string
+		context: string
+		self: string
+	}
+}

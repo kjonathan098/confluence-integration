@@ -1,12 +1,12 @@
 import { Request, Response } from 'express'
 import querystring from 'querystring'
 import { CONFLUENCE_SCOPES } from '../constants/oauth'
-import { exchangeCodeForToken } from '../utils/oauth'
-import { respondError, respondSuccess } from '../utils/respond'
+import { exchangeCodeForToken } from '../utils/exchangeCodeForToken'
+import { respondError } from '../utils/respond'
 
 const redirectToAtlassian = (req: Request, res: Response) => {
 	if (!process.env.CLIENT_ID || !process.env.REDIRECT_URI) {
-		respondError(res, 'Missing required environment variables')
+		respondError(res, 'Server misconfiguration: required environment variables are missing')
 		return
 	}
 	// build the authorization URL
@@ -35,12 +35,18 @@ const handleOauthCallback = async (req: Request, res: Response): Promise<void> =
 	try {
 		const { access_token, refresh_token, expires_in } = await exchangeCodeForToken(code)
 		req.session.accessToken = access_token
+		req.session.refreshToken = refresh_token
+		req.session.tokenExpiry = Date.now() + expires_in * 1000
 
-		// NOTE : SHOULD I INCLUDE REFRESH TOKEN TBD
-		// req.session.refreshToken = refresh_token
+		/* test refresh token */
+		// req.session.tokenExpiry = Date.now() - 1000 // expired 1 second ago
 
-		res.redirect('/api/spaces')
-		// respondSuccess(res, { message: 'OAuth flow completed!' }, 200)
+		/* to get an access_token  and use it in postman for dev mode uncomment this */
+		// res.send(access_token)
+		// return
+
+		const redirectURL = req.session.returnTo ? req.session.returnTo : '/api/spaces'
+		res.redirect(redirectURL)
 	} catch (error: any) {
 		console.error('OAuth callback error:', error.response?.data || error.message || error)
 		respondError(res, 'Failed to exchange code for token', 500)
@@ -49,6 +55,3 @@ const handleOauthCallback = async (req: Request, res: Response): Promise<void> =
 
 const authController = { redirectToAtlassian, handleOauthCallback }
 export default authController
-
-const testSession = {} as Express.Request['session']
-testSession.accessToken
