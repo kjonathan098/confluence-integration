@@ -3,7 +3,7 @@ import { Request, Response } from 'express'
 import { ConfluencePagesResponse } from '../../types/confluence'
 import { ATLASSIAN_API_BASE } from '../constants/attlasian'
 import { handleAxiosError } from '../utils/handleAxiosErrrors'
-import { respondError, respondSuccess } from '../utils/respond'
+import { respondSuccess } from '../utils/respond'
 
 const getPages = async (req: Request, res: Response) => {
 	const accessToken = req.session.accessToken
@@ -29,16 +29,17 @@ const getPages = async (req: Request, res: Response) => {
 	}
 }
 
+/* this is so test coverage ignore this function  */
 // istanbul ignore next
 const getPagesDev = async (req: Request, res: Response) => {
-	const access_token = req.session.accessToken
-	if (!access_token) {
+	const accessToken = req.query.token
+	console.log(accessToken)
+	if (!accessToken) {
 		req.session.returnTo = req.originalUrl
-		res.send('hi')
+		res.send('no access token found')
 		return
 	}
 
-	const accessToken = req.query.token
 	const { cloudId, spaceKey } = req.params
 
 	if (!accessToken) {
@@ -66,5 +67,5 @@ const getPagesDev = async (req: Request, res: Response) => {
 	}
 }
 
-const pagesController = { getPages }
+const pagesController = { getPages, getPagesDev }
 export default pagesController

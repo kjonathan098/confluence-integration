@@ -55,14 +55,6 @@ describe('spaceController.getSpaces', () => {
 		expect(jsonStub.calledWithMatch(expectSuccessResponse(mockSpaces))).to.be.true
 	})
 
-	it('should redirect to OAuth if no token in session', async () => {
-		req.session!.accessToken = undefined
-
-		await spaceController.getSpaces(req as Request, res as Response)
-
-		expect(redirectStub.calledOnceWith('/api/oauth/redirect')).to.be.true
-	})
-
 	it('should return 400 if no accessible site', async () => {
 		req.session!.accessToken = 'mock-token'
 

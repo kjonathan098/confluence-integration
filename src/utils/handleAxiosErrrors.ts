@@ -1,4 +1,3 @@
-// utils/handleAxiosError.ts
 import { Response } from 'express'
 import { respondError } from './respond'
 

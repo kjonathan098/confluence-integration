@@ -1,8 +1,7 @@
 import { expect } from 'chai'
 import sinon from 'sinon'
 import axios from 'axios'
-import { exchangeCodeForToken } from '../../src/utils/oauth'
-import { isError } from 'joi'
+import { exchangeCodeForToken } from '../../src/utils/exchangeCodeForToken'
 import { ErrorResponse } from '../../types/responseTypes'
 
 describe('exchangeCodeForToken', () => {
