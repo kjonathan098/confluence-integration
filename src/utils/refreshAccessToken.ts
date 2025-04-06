@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { AtlassianTokenResponse } from '../../types/AtlassianTokenResponse'
 
 export const refreshAccessToken = async (refreshToken: string) => {
 	const params = new URLSearchParams()
@@ -7,7 +8,7 @@ export const refreshAccessToken = async (refreshToken: string) => {
 	params.append('client_secret', process.env.CLIENT_SECRET!)
 	params.append('refresh_token', refreshToken)
 
-	const response = await axios.post('https://auth.atlassian.com/oauth/token', params, {
+	const response = await axios.post<AtlassianTokenResponse>('https://auth.atlassian.com/oauth/token', params, {
 		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 	})
 
