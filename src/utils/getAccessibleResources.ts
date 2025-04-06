@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { AccessibleResource } from '../../types/confluence'
 import { ATLASSIAN_API_BASE } from '../constants/attlasian'
-import { respondError } from './respond'
+import { buildErrorResponseFormat, respondError } from './respond'
 
 const getAccessibleResources = async (accessToken: string): Promise<AccessibleResource[]> => {
 	try {
@@ -14,10 +14,7 @@ const getAccessibleResources = async (accessToken: string): Promise<AccessibleRe
 
 		return res.data
 	} catch (error) {
-		// This is a standalone helper function, so we don't handle the response object directly.
-		// Instead, we manually throw a JSON-formatted error that matches the global error response structure.
-
-		throw new Error(JSON.stringify({ success: false, message: 'Failed to fetch accessible resources from Atlassian' }))
+		throw new Error(buildErrorResponseFormat('Failed to fetch accessible resources from Atlassian'))
 	}
 }
 
