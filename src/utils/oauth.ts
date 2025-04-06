@@ -18,7 +18,6 @@ export const exchangeCodeForToken = async (code: string) => {
 				},
 			}
 		)
-		console.log('data from exchaange code for token', response.data)
 		return response.data
 	} catch (error) {
 		throw new Error(buildErrorResponseFormat('Failed to exchange authorization code for access token'))

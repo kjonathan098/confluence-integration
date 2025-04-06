@@ -37,13 +37,16 @@ const handleOauthCallback = async (req: Request, res: Response): Promise<void> =
 		req.session.accessToken = access_token
 		req.session.refreshToken = refresh_token
 		req.session.tokenExpiry = Date.now() + expires_in * 1000
-		// console.log(req.session.refreshToken, req.session.tokenExpiry)
+
+		// test refresh token
+		req.session.tokenExpiry = Date.now() - 1000 // expired 1 second ago
+
 		// to get an access_token for dev mode uncomment this
-		res.send(access_token)
-		return
+		// res.send(access_token)
+		// return
 
 		const redirectURL = req.session.returnTo ? req.session.returnTo : '/api/spaces'
-		// res.redirect(redirectURL)
+		res.redirect(redirectURL)
 	} catch (error: any) {
 		console.error('OAuth callback error:', error.response?.data || error.message || error)
 		respondError(res, 'Failed to exchange code for token', 500)
