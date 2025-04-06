@@ -1,9 +1,10 @@
 import axios from 'axios'
 import { buildErrorResponseFormat } from './respond'
+import { AtlassianTokenResponse } from '../../types/AtlassianTokenResponse'
 
-export const exchangeCodeForToken = async (code: string) => {
+export const exchangeCodeForToken = async (code: string): Promise<AtlassianTokenResponse> => {
 	try {
-		const response = await axios.post(
+		const response = await axios.post<AtlassianTokenResponse>(
 			'https://auth.atlassian.com/oauth/token',
 			{
 				grant_type: 'authorization_code',
