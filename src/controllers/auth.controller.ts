@@ -38,8 +38,9 @@ const handleOauthCallback = async (req: Request, res: Response): Promise<void> =
 
 		// NOTE : SHOULD I INCLUDE REFRESH TOKEN TBD
 		// req.session.refreshToken = refresh_token
-
-		res.redirect('/api/spaces')
+		const redirectURL = req.session.returnTo ? req.session.returnTo : '/api/spaces'
+		console.log(redirectURL)
+		res.redirect(redirectURL)
 		// respondSuccess(res, { message: 'OAuth flow completed!' }, 200)
 	} catch (error: any) {
 		console.error('OAuth callback error:', error.response?.data || error.message || error)
