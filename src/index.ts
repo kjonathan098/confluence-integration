@@ -14,6 +14,7 @@ declare module 'express-session' {
 		redirectAfterLogin?: string
 		refreshToken?: string
 		returnTo?: string
+		tokenExpiry?: number
 	}
 }
 const port = 3000

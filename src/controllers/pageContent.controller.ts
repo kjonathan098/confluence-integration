@@ -8,7 +8,7 @@ import { respondSuccess } from '../utils/respond'
 const getPageContent = async (req: Request, res: Response) => {
 	const { cloudId, pageId } = req.params
 	const accessToken = req.session.accessToken as string
-	const format = req.query.format as string // 'html' or undefined
+	const format = (req.query?.format ?? '') as string
 
 	try {
 		const pageContent = await axios.get<ConfluencePage>(`${ATLASSIAN_API_BASE}/ex/confluence/${cloudId}/wiki/rest/api/content/${pageId}`, {
@@ -33,17 +33,11 @@ const getPageContent = async (req: Request, res: Response) => {
 				content,
 			})
 		}
-
-		// respondSuccess(res, {
-		// 	id,
-		// 	title,
-		// 	content,
-		// })
 	} catch (error) {
 		handleAxiosError(res, error, 'Failed to fetch page content from Confluence.')
 	}
 }
-//istanbul ignore
+// istanbul ignore next
 const getPageContentDev = async (req: Request, res: Response) => {
 	const { cloudId, pageId } = req.params
 	const accessToken = req.query.token as string
