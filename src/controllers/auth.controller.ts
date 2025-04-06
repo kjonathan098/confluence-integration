@@ -2,11 +2,11 @@ import { Request, Response } from 'express'
 import querystring from 'querystring'
 import { CONFLUENCE_SCOPES } from '../constants/oauth'
 import { exchangeCodeForToken } from '../utils/exchangeCodeForToken'
-import { respondError, respondSuccess } from '../utils/respond'
+import { respondError } from '../utils/respond'
 
 const redirectToAtlassian = (req: Request, res: Response) => {
 	if (!process.env.CLIENT_ID || !process.env.REDIRECT_URI) {
-		respondError(res, 'Missing required environment variables')
+		respondError(res, 'Server misconfiguration: required environment variables are missing')
 		return
 	}
 	// build the authorization URL
@@ -38,10 +38,10 @@ const handleOauthCallback = async (req: Request, res: Response): Promise<void> =
 		req.session.refreshToken = refresh_token
 		req.session.tokenExpiry = Date.now() + expires_in * 1000
 
-		// test refresh token
-		req.session.tokenExpiry = Date.now() - 1000 // expired 1 second ago
+		/* test refresh token */
+		// req.session.tokenExpiry = Date.now() - 1000 // expired 1 second ago
 
-		// to get an access_token for dev mode uncomment this
+		/* to get an access_token  and use it in postman for dev mode uncomment this */
 		// res.send(access_token)
 		// return
 
@@ -55,6 +55,3 @@ const handleOauthCallback = async (req: Request, res: Response): Promise<void> =
 
 const authController = { redirectToAtlassian, handleOauthCallback }
 export default authController
-
-const testSession = {} as Express.Request['session']
-testSession.accessToken

@@ -5,7 +5,6 @@ import { Request, Response } from 'express'
 import pagesController from '../../src/controllers/pages.controller'
 import { expectErrorResponse, expectSuccessResponse } from '../helpers/assertResponses'
 import { mockPagesResponse } from '../fixtures/mockPages'
-import { Session, SessionData } from 'express-session'
 import '../../types/session'
 import { ATLASSIAN_API_BASE } from '../../src/constants/attlasian'
 

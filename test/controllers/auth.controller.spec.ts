@@ -5,7 +5,6 @@ import { Request, Response } from 'express'
 import * as exchangeCodeForToken from '../../src/utils/exchangeCodeForToken'
 import '../../types/session'
 import { expectErrorResponse } from '../helpers/assertResponses'
-import { ErrorResponse } from '../../types/responseTypes'
 import { buildErrorResponseFormat } from '../../src/utils/respond'
 import { mockTokenResponse } from '../fixtures/mockTokenResponse'
 
@@ -73,7 +72,8 @@ describe('authController.redirectToAtlassian', () => {
 
 		// Check that scope string exists and contains expected values
 		expect(scope).to.be.a('string')
-		expect(scope).to.include('read:confluence-space.summary') // Replace with actual scope you're using
+		// Replace with actual scope you're using
+		expect(scope).to.include('read:confluence-space.summary')
 	})
 
 	it('should fail gracefully if client_id is missing', () => {
@@ -108,7 +108,7 @@ describe('authController.redirectToAtlassian', () => {
 })
 
 describe('authController.handleOauthCallback', () => {
-	let req, res
+	let req
 
 	afterEach(() => {
 		sinon.restore()
@@ -128,10 +128,8 @@ describe('authController.handleOauthCallback', () => {
 
 		const res = { redirect: redirectStub }
 
-		// Act
 		await authController.handleOauthCallback(req as unknown as Request, res as unknown as Response)
 
-		// Assert
 		expect(redirectStub.calledOnceWith('/api/spaces')).to.be.true
 	})
 

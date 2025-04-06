@@ -1,20 +1,13 @@
-import express, { Request, Response } from 'express'
-import { AccessibleResource } from '../../types/confluence'
+import { Request, Response } from 'express'
 import getAccessibleResources from '../utils/getAccessibleResources'
 import getUserSpaces from '../utils/getUserSpaces'
 import { respondError, respondSuccess } from '../utils/respond'
 
 const getSpaces = async (req: Request, res: Response) => {
-	// TODO CONVERT THIS INTO MIDDLEWARE
-	// check if user is already logged in if not send them to confluence oath
-	if (!req.session.accessToken) {
-		res.redirect('/api/oauth/redirect')
-	}
-
 	const access_token = req.session.accessToken!
 
 	try {
-		// STEP 1: Get cloudId from Atlassian
+		// Get cloudId from Atlassian
 		const accessibleRes = await getAccessibleResources(access_token)
 		const site = accessibleRes[0] // For this exercise, we only use the first accessible site
 
@@ -34,6 +27,7 @@ const getSpaces = async (req: Request, res: Response) => {
 	}
 }
 
+/* this is so test coverage ignore this function  */
 // istanbul ignore next
 const getSpacesPostman = async (req: Request, res: Response) => {
 	const accessToken = req.query.token as string

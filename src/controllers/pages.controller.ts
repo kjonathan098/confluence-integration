@@ -3,7 +3,7 @@ import { Request, Response } from 'express'
 import { ConfluencePagesResponse } from '../../types/confluence'
 import { ATLASSIAN_API_BASE } from '../constants/attlasian'
 import { handleAxiosError } from '../utils/handleAxiosErrrors'
-import { respondError, respondSuccess } from '../utils/respond'
+import { respondSuccess } from '../utils/respond'
 
 const getPages = async (req: Request, res: Response) => {
 	const accessToken = req.session.accessToken
@@ -29,6 +29,7 @@ const getPages = async (req: Request, res: Response) => {
 	}
 }
 
+/* this is so test coverage ignore this function  */
 // istanbul ignore next
 const getPagesDev = async (req: Request, res: Response) => {
 	const accessToken = req.query.token

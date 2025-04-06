@@ -1,5 +1,3 @@
-// test/utils/refreshAccessToken.spec.ts
-
 import { expect } from 'chai'
 import nock from 'nock'
 import { refreshAccessToken } from '../../src/utils/refreshAccessToken'

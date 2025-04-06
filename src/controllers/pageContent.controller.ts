@@ -37,6 +37,8 @@ const getPageContent = async (req: Request, res: Response) => {
 		handleAxiosError(res, error, 'Failed to fetch page content from Confluence.')
 	}
 }
+
+/* this is so test coverage ignore this function  */
 // istanbul ignore next
 const getPageContentDev = async (req: Request, res: Response) => {
 	const { cloudId, pageId } = req.params
