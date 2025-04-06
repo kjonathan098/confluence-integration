@@ -4,7 +4,7 @@
 	"main": "index.js",
 	"scripts": {
 		"test": "mocha --require ts-node/register test/**/*.spec.ts",
-		"test:watch": "mocha --require ts-node/register --watch test/**/*.spec.ts",
+		"test:watch": "mocha --require ts-node/register --watch --watch-files src,test test/**/*.spec.ts",
 		"build": "rimraf dist && npx tsc",
 		"start": "node dist/index.js",
 		"predev": "npm run build",
