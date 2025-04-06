@@ -4,6 +4,7 @@ import { Request, Response, NextFunction } from 'express'
 const verifyUserInSession = (req: Request, res: Response, next: NextFunction) => {
 	const accessToken = req.session?.accessToken
 	if (!accessToken) {
+		req.session.returnTo = req.originalUrl
 		// Not authenticated yet – redirect to OAuth login
 		res.redirect('/api/oauth/redirect')
 		return
