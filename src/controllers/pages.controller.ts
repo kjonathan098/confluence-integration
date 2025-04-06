@@ -31,14 +31,14 @@ const getPages = async (req: Request, res: Response) => {
 
 // istanbul ignore next
 const getPagesDev = async (req: Request, res: Response) => {
-	const access_token = req.session.accessToken
-	if (!access_token) {
+	const accessToken = req.query.token
+	console.log(accessToken)
+	if (!accessToken) {
 		req.session.returnTo = req.originalUrl
-		res.send('hi')
+		res.send('no access token found')
 		return
 	}
 
-	const accessToken = req.query.token
 	const { cloudId, spaceKey } = req.params
 
 	if (!accessToken) {
@@ -66,5 +66,5 @@ const getPagesDev = async (req: Request, res: Response) => {
 	}
 }
 
-const pagesController = { getPages }
+const pagesController = { getPages, getPagesDev }
 export default pagesController

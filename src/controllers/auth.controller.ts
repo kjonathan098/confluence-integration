@@ -33,15 +33,17 @@ const handleOauthCallback = async (req: Request, res: Response): Promise<void> =
 	}
 
 	try {
+		// NOTE : SHOULD I INCLUDE REFRESH TOKEN TBD
+		// req.session.refreshToken = refresh_token
 		const { access_token, refresh_token, expires_in } = await exchangeCodeForToken(code)
 		req.session.accessToken = access_token
 
-		// NOTE : SHOULD I INCLUDE REFRESH TOKEN TBD
-		// req.session.refreshToken = refresh_token
+		// to get an access_token for dev mode uncomment this
+		// res.send(access_token)
+		// return
+
 		const redirectURL = req.session.returnTo ? req.session.returnTo : '/api/spaces'
-		console.log(redirectURL)
 		res.redirect(redirectURL)
-		// respondSuccess(res, { message: 'OAuth flow completed!' }, 200)
 	} catch (error: any) {
 		console.error('OAuth callback error:', error.response?.data || error.message || error)
 		respondError(res, 'Failed to exchange code for token', 500)
