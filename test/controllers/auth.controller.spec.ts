@@ -3,7 +3,8 @@ import sinon, { SinonStub } from 'sinon'
 import authController from '../../src/controllers/auth.controller'
 import { Request, Response } from 'express'
 import * as oauthUtils from '../../src/utils/oauth'
-import '../../types/session' // ✅ now it's a real importable module
+import '../../types/session'
+import { expectErrorResponse } from '../helpers/assertResponses'
 
 describe('authController.redirectToAtlassian', () => {
 	let res: Partial<Response>
@@ -86,12 +87,7 @@ describe('authController.redirectToAtlassian', () => {
 
 		authController.redirectToAtlassian({} as Request, res as unknown as Response)
 
-		expect(
-			jsonStub.calledWithMatch({
-				success: false,
-				message: sinon.match.string,
-			})
-		).to.be.true
+		expect(jsonStub.calledWithMatch(expectErrorResponse)).to.be.true
 	})
 	it('should fail gracefully if redirect_uri is missing', () => {
 		delete process.env.REDIRECT_URI
@@ -104,12 +100,7 @@ describe('authController.redirectToAtlassian', () => {
 
 		authController.redirectToAtlassian({} as Request, res as unknown as Response)
 
-		expect(
-			jsonStub.calledWithMatch({
-				success: false,
-				message: sinon.match.string,
-			})
-		).to.be.true
+		expect(jsonStub.calledWithMatch(expectErrorResponse)).to.be.true
 	})
 })
 

@@ -16,7 +16,7 @@ const getSpaces = async (req: Request, res: Response) => {
 	try {
 		// STEP 1: Get cloudId from Atlassian
 		const accessibleRes = await getAccessibleResources(access_token)
-		const site = accessibleRes[0]
+		const site = accessibleRes[0] // For this exercise, we only use the first accessible site
 
 		if (!site) {
 			respondError(res, 'No accessible Confluence sites found', 400)
@@ -28,13 +28,11 @@ const getSpaces = async (req: Request, res: Response) => {
 		const spaces = await getUserSpaces(access_token, cloudId)
 
 		respondSuccess(res, spaces, 200)
-		// res.status(200).json(spaces)
-		return
 	} catch (err: any) {
 		console.error('Error:', err.response?.data || err.message)
 
 		//TODO Use global resp
-		res.status(500).json({ message: 'Error fetching spaces', error: err.response?.data || err.message })
+		respondError(res, 'Error fetching spaces', 500)
 	}
 }
 
