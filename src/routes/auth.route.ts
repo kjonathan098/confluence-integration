@@ -1,5 +1,6 @@
 import express from 'express'
 import authController from '../controllers/auth.controller'
+import verifyUserInSession from '../middleware/verifyUserSession'
 
 const authRouter = express.Router()
 

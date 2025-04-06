@@ -3,6 +3,7 @@ import sinon from 'sinon'
 import axios from 'axios'
 import { exchangeCodeForToken } from '../../src/utils/oauth'
 import { isError } from 'joi'
+import { ErrorResponse } from '../../types/responseTypes'
 
 describe('exchangeCodeForToken', () => {
 	let postStub: sinon.SinonStub
@@ -43,19 +44,28 @@ describe('exchangeCodeForToken', () => {
 			redirect_uri: 'http://localhost/callback',
 			code: 'abc123',
 		})
-		console.log('hi')
 		expect(result).to.deep.equal(mockResponse.data)
-		console.log('goodbye')
 	})
 
-	it('should throw if axios.post fails', async () => {
+	it('should throw a global error response if axios.post fails', async () => {
 		postStub.rejects(new Error('boom'))
 
 		try {
 			await exchangeCodeForToken('fail-code')
 			throw new Error('Should have thrown')
-		} catch (err) {
-			expect((err as Error).message).to.equal('boom')
+		} catch (err: any) {
+			expect(err).to.be.instanceOf(Error)
+
+			const parsed = JSON.parse(err.message)
+
+			expect(parsed).to.satisfy((obj: ErrorResponse) =>
+				sinon
+					.match({
+						success: false,
+						message: sinon.match.string,
+					})
+					.test(obj)
+			)
 		}
 	})
 })

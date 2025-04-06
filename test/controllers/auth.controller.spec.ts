@@ -3,6 +3,10 @@ import sinon, { SinonStub } from 'sinon'
 import authController from '../../src/controllers/auth.controller'
 import { Request, Response } from 'express'
 import * as oauthUtils from '../../src/utils/oauth'
+import '../../types/session'
+import { expectErrorResponse } from '../helpers/assertResponses'
+import { ErrorResponse } from '../../types/responseTypes'
+import { buildErrorResponseFormat } from '../../src/utils/respond'
 
 describe('authController.redirectToAtlassian', () => {
 	let res: Partial<Response>
@@ -85,12 +89,7 @@ describe('authController.redirectToAtlassian', () => {
 
 		authController.redirectToAtlassian({} as Request, res as unknown as Response)
 
-		expect(
-			jsonStub.calledWithMatch({
-				success: false,
-				message: sinon.match.string,
-			})
-		).to.be.true
+		expect(jsonStub.calledWithMatch(expectErrorResponse)).to.be.true
 	})
 	it('should fail gracefully if redirect_uri is missing', () => {
 		delete process.env.REDIRECT_URI
@@ -103,12 +102,7 @@ describe('authController.redirectToAtlassian', () => {
 
 		authController.redirectToAtlassian({} as Request, res as unknown as Response)
 
-		expect(
-			jsonStub.calledWithMatch({
-				success: false,
-				message: sinon.match.string,
-			})
-		).to.be.true
+		expect(jsonStub.calledWithMatch(expectErrorResponse)).to.be.true
 	})
 })
 
@@ -117,6 +111,31 @@ describe('authController.handleOauthCallback', () => {
 
 	afterEach(() => {
 		sinon.restore()
+	})
+
+	it('should redirect to /api/spaces on successful token exchange', async () => {
+		// Stub the token exchange utility
+		sinon.stub(oauthUtils, 'exchangeCodeForToken').resolves({
+			access_token: 'mock-access',
+			refresh_token: 'mock-refresh',
+			expires_in: 3600,
+		})
+
+		// Stub the redirect
+		const redirectStub = sinon.stub()
+
+		const req = {
+			query: { code: 'mock-code' },
+			session: {} as any,
+		}
+
+		const res = { redirect: redirectStub }
+
+		// Act
+		await authController.handleOauthCallback(req as unknown as Request, res as unknown as Response)
+
+		// Assert
+		expect(redirectStub.calledOnceWith('/api/spaces')).to.be.true
 	})
 
 	it('should return 400 if code is missing', async () => {
@@ -135,53 +154,44 @@ describe('authController.handleOauthCallback', () => {
 			})
 		).to.be.true
 	})
+	// it.only('should throw 500 error if token exchange fails', async () => {
+	// 	sinon.stub(oauthUtils, 'exchangeCodeForToken').rejects(new Error('boom'))
+	// 	const jsonStub = sinon.stub()
+	// 	const statusStub = sinon.stub().returns({ json: jsonStub })
 
-	it('should return 200 and token data on success', async () => {
-		sinon.stub(oauthUtils, 'exchangeCodeForToken').resolves({
-			access_token: 'mock-access',
-			refresh_token: 'mock-refresh',
-			expires_in: 3600,
-			message: 'OAuth flow completed!',
-		})
+	// 	const req: Partial<Request> = { query: { code: 'mock-code' } }
+	// 	const res = { status: statusStub }
 
-		const jsonStub = sinon.stub()
-		const statusStub = sinon.stub().returns({ success: true, json: jsonStub })
+	// 	try {
+	// 		await authController.handleOauthCallback(req as Request, res as unknown as Response)
+	// 		throw new Error('Expected error not thrown')
+	// 	} catch (err: any) {
+	// 		console.log('errroro ->', err)
+	// 		// expect(true).to.be(true)
+	// 		// const parsed = JSON.parse(err.message)
+	// 		expect(err).to.be.instanceOf(Error)
 
-		let req: Partial<Request>
-		req = { query: { code: 'mock-code' } }
-		res = { status: statusStub }
+	// 		// expect(parsed).to.satisfy((obj: ErrorResponse) => sinon.match(expectErrorResponse).test(obj))
+	// 	}
+	// })
+	it('should respond with global error if exchangeCodeForToken fails', async () => {
+		// This simulates a failed token exchange
+		sinon.stub(oauthUtils, 'exchangeCodeForToken').rejects(new Error(buildErrorResponseFormat('Failed to exchange authorization code for access token')))
 
-		await authController.handleOauthCallback(req as Request, res as unknown as Response)
-
-		expect(
-			jsonStub.calledWithMatch({
-				success: true,
-				data: {
-					// message: 'OAuth flow completed!',
-					access_token: 'mock-access',
-					refresh_token: 'mock-refresh',
-					expires_in: 3600,
-				},
-			})
-		).to.be.true
-	})
-
-	it('should throw 500 error if token exchange fails', async () => {
-		sinon.stub(oauthUtils, 'exchangeCodeForToken').rejects(new Error('boom'))
 		const jsonStub = sinon.stub()
 		const statusStub = sinon.stub().returns({ json: jsonStub })
 
-		const req: Partial<Request> = { query: { code: 'mock-code' } }
+		const req = { query: { code: 'mock-code' }, session: {} }
 		const res = { status: statusStub }
 
-		try {
-			await authController.handleOauthCallback(req as Request, res as unknown as Response)
-			throw new Error('Expected error not thrown')
-		} catch (err) {
-			expect(err).to.deep.equal({
-				status: 500,
-				message: 'Failed to exchange code for token',
-			})
-		}
+		await authController.handleOauthCallback(req as unknown as Request, res as unknown as Response)
+
+		expect(statusStub.calledWith(500)).to.be.true
+
+		const [actualError] = jsonStub.firstCall.args
+		expect(actualError).to.deep.equal({
+			success: false,
+			message: 'Failed to exchange code for token',
+		})
 	})
 })

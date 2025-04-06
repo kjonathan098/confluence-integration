@@ -1,7 +1,6 @@
 import { Request, Response } from 'express'
 import querystring from 'querystring'
 import { CONFLUENCE_SCOPES } from '../constants/oauth'
-import axios from 'axios'
 import { exchangeCodeForToken } from '../utils/oauth'
 import { respondError, respondSuccess } from '../utils/respond'
 
@@ -35,15 +34,21 @@ const handleOauthCallback = async (req: Request, res: Response): Promise<void> =
 
 	try {
 		const { access_token, refresh_token, expires_in } = await exchangeCodeForToken(code)
-		const data = { access_token, refresh_token, expires_in, message: 'OAuth flow completed!' }
-		respondSuccess(res, data, 200)
+		req.session.accessToken = access_token
+
+		// NOTE : SHOULD I INCLUDE REFRESH TOKEN TBD
+		// req.session.refreshToken = refresh_token
+
+		res.redirect('/api/spaces')
+		// respondSuccess(res, { message: 'OAuth flow completed!' }, 200)
 	} catch (error: any) {
-		throw {
-			status: 500,
-			message: 'Failed to exchange code for token',
-		}
+		console.error('OAuth callback error:', error.response?.data || error.message || error)
+		respondError(res, 'Failed to exchange code for token', 500)
 	}
 }
 
 const authController = { redirectToAtlassian, handleOauthCallback }
 export default authController
+
+const testSession = {} as Express.Request['session']
+testSession.accessToken
