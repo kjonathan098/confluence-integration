@@ -10,10 +10,6 @@ const getPages = async (req: Request, res: Response) => {
 
 	const { cloudId, spaceKey } = req.params
 
-	if (!cloudId || !spaceKey) {
-		respondError(res, 'Please Provide Cloud ID and Space Key')
-		return
-	}
 	try {
 		const pages = await axios.get<ConfluencePagesResponse>(`${ATLASSIAN_API_BASE}/ex/confluence/${cloudId}/wiki/rest/api/content`, {
 			headers: {
@@ -33,6 +29,7 @@ const getPages = async (req: Request, res: Response) => {
 	}
 }
 
+// istanbul ignore next
 const getPagesDev = async (req: Request, res: Response) => {
 	const access_token = req.session.accessToken
 	if (!access_token) {
@@ -50,10 +47,6 @@ const getPagesDev = async (req: Request, res: Response) => {
 		return
 	}
 
-	if (!cloudId || !spaceKey) {
-		respondError(res, 'Please Provide Cloud ID and Space Key')
-		return
-	}
 	try {
 		const pages = await axios.get<ConfluencePagesResponse>(`${ATLASSIAN_API_BASE}/ex/confluence/${cloudId}/wiki/rest/api/content`, {
 			headers: {
@@ -73,5 +66,5 @@ const getPagesDev = async (req: Request, res: Response) => {
 	}
 }
 
-const pagesController = { getPagesDev, getPages }
+const pagesController = { getPages }
 export default pagesController

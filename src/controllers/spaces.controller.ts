@@ -5,8 +5,6 @@ import getUserSpaces from '../utils/getUserSpaces'
 import { respondError, respondSuccess } from '../utils/respond'
 
 const getSpaces = async (req: Request, res: Response) => {
-	res.send(req.session.accessToken)
-	return
 	// TODO CONVERT THIS INTO MIDDLEWARE
 	// check if user is already logged in if not send them to confluence oath
 	if (!req.session.accessToken) {
@@ -36,6 +34,7 @@ const getSpaces = async (req: Request, res: Response) => {
 	}
 }
 
+// istanbul ignore next
 const getSpacesPostman = async (req: Request, res: Response) => {
 	const accessToken = req.query.token as string
 

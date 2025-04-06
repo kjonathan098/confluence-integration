@@ -11,5 +11,5 @@ import verifyUserInSession from '../middleware/verifyUserSession'
 const pagesRouter = express.Router()
 
 pagesRouter.get('/:cloudId/:spaceKey', verifyUserInSession, pagesController.getPages)
-pagesRouter.get('/:cloudId/:spaceKey', pagesController.getPagesDev)
+// pagesRouter.get('/:cloudId/:spaceKey', pagesController.getPagesDev)
 export default pagesRouter
