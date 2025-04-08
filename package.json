@@ -10,7 +10,8 @@
 		"predev": "npm run build",
 		"dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts",
 		"precoverage": "rm -rf coverage .nyc_output",
-		"coverage": "nyc npm test"
+		"coverage": "nyc npm test",
+		"depcheck": "depcheck"
 	},
 	"keywords": [],
 	"author": "",
@@ -32,6 +33,7 @@
 		"@types/node": "^22.14.0",
 		"@types/sinon": "^17.0.4",
 		"chai": "^4.3.4",
+		"depcheck": "^1.4.7",
 		"mocha": "^10.8.2",
 		"nodemon": "^3.1.9",
 		"nyc": "^17.1.0",

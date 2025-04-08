@@ -5,16 +5,20 @@ import { Request, Response } from 'express'
 import pageContentController from '../../src/controllers/pageContent.controller'
 import { expectErrorResponse, expectSuccessResponse } from '../helpers/assertResponses'
 import { mockPage } from '../fixtures/mockPages' // should be a mock based on ConfluencePage
+import { AppError } from '../../src/utils/appErrorClass'
+import { assertNextCalledWithAppError } from '../helpers/assertNextCalledWithAppError'
 
 describe('getPageContent', () => {
 	let req: Partial<Request>
 	let res: Partial<Response>
+	let next: sinon.SinonStub
 	let jsonStub: sinon.SinonStub
 	let statusStub: sinon.SinonStub
 	let axiosStub: sinon.SinonStub
 	beforeEach(() => {
 		jsonStub = sinon.stub()
 		statusStub = sinon.stub().returns({ json: jsonStub })
+		next = sinon.stub()
 
 		res = {
 			status: statusStub,
@@ -42,7 +46,7 @@ describe('getPageContent', () => {
 
 		req.query = {}
 
-		await pageContentController.getPageContent(req as Request, res as Response)
+		await pageContentController.getPageContent(req as Request, res as Response, next)
 
 		expect(
 			jsonStub.calledWithMatch(
@@ -68,18 +72,17 @@ describe('getPageContent', () => {
 
 		sinon.stub(axios, 'get').resolves({ data: mockPage })
 
-		await pageContentController.getPageContent(req as Request, res as Response)
+		await pageContentController.getPageContent(req as Request, res as Response, next)
 
 		expect(setStub.calledWith('Content-Type', 'text/html')).to.be.true
 		expect(sendStub.calledWith(mockPage.body?.storage?.value)).to.be.true
 	})
 
 	it('should handle Axios failure gracefully', async () => {
-		axiosStub = sinon.stub(axios, 'get').rejects(new Error('boom'))
+		axiosStub = sinon.stub(axios, 'get').rejects(new AppError('mock-error response'))
 
-		await pageContentController.getPageContent(req as Request, res as Response)
+		await pageContentController.getPageContent(req as Request, res as Response, next)
 
-		expect(statusStub.calledWith(500)).to.be.true
-		expect(jsonStub.calledWithMatch(expectErrorResponse)).to.be.true
+		assertNextCalledWithAppError(next)
 	})
 })

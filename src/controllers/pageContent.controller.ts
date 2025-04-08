@@ -1,11 +1,11 @@
 import axios from 'axios'
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { ConfluencePage } from '../../types/confluence'
 import { ATLASSIAN_API_BASE } from '../constants/attlasian'
-import { handleAxiosError } from '../utils/handleAxiosErrrors'
 import { respondSuccess } from '../utils/respond'
+import { AppError } from '../utils/appErrorClass'
 
-const getPageContent = async (req: Request, res: Response) => {
+const getPageContent = async (req: Request, res: Response, next: NextFunction) => {
 	const { cloudId, pageId } = req.params
 	const accessToken = req.session.accessToken as string
 	const format = (req.query?.format ?? '') as string
@@ -33,14 +33,15 @@ const getPageContent = async (req: Request, res: Response) => {
 				content,
 			})
 		}
-	} catch (error) {
-		handleAxiosError(res, error, 'Failed to fetch page content from Confluence.')
+	} catch (err: any) {
+		console.error('Get Pagest Error :', err.message || err)
+		return next(new AppError(err.message || 'Error fetching pages', err.status))
 	}
 }
 
 /* this is so test coverage ignore this function  */
 // istanbul ignore next
-const getPageContentDev = async (req: Request, res: Response) => {
+const getPageContentDev = async (req: Request, res: Response, next: NextFunction) => {
 	const { cloudId, pageId } = req.params
 	const accessToken = req.query.token as string
 
@@ -63,8 +64,9 @@ const getPageContentDev = async (req: Request, res: Response) => {
 			title,
 			content,
 		})
-	} catch (error) {
-		handleAxiosError(res, error, 'Failed to fetch page content from Confluence.')
+	} catch (err: any) {
+		console.error('Get Pagest Error :', err.message || err)
+		return next(new AppError(err.message || 'Error fetching pages', err.status))
 	}
 }
 
