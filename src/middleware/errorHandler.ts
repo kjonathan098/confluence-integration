@@ -3,13 +3,11 @@ import { respondError } from '../utils/respond'
 interface ErrorResponse {
 	status: number
 	message: string
+	success: false
 }
 const errorHandler = (err: ErrorResponse, req: Request, res: Response, next: NextFunction) => {
-	console.error(err.message)
-
-	const status = err.status || 500
-	const message = err.message || 'Internal Server Error'
-	respondError(res, message, status)
+	console.log(err)
+	res.status(err.status).json({ success: err.success, message: err.message })
 }
 
 export default errorHandler

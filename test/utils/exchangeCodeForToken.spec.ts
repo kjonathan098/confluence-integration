@@ -55,16 +55,7 @@ describe('exchangeCodeForToken', () => {
 		} catch (err: any) {
 			expect(err).to.be.instanceOf(Error)
 
-			const parsed = JSON.parse(err.message)
-
-			expect(parsed).to.satisfy((obj: ErrorResponse) =>
-				sinon
-					.match({
-						success: false,
-						message: sinon.match.string,
-					})
-					.test(obj)
-			)
+			expect(err).to.have.property('message', 'boom')
 		}
 	})
 })

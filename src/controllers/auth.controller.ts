@@ -1,8 +1,9 @@
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import querystring from 'querystring'
 import { CONFLUENCE_SCOPES } from '../constants/oauth'
 import { exchangeCodeForToken } from '../utils/exchangeCodeForToken'
 import { respondError } from '../utils/respond'
+import { AppError } from '../utils/appErrorClass'
 
 const redirectToAtlassian = (req: Request, res: Response) => {
 	if (!process.env.CLIENT_ID || !process.env.REDIRECT_URI) {
@@ -23,13 +24,12 @@ const redirectToAtlassian = (req: Request, res: Response) => {
 	res.redirect(url)
 }
 
-const handleOauthCallback = async (req: Request, res: Response): Promise<void> => {
+const handleOauthCallback = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
 	// get code from query params
 	const code = req.query.code as string
 
 	if (!code) {
-		respondError(res, 'Missing authorization code', 400)
-		return
+		return next(new AppError('Missing authoriazon Code', 400))
 	}
 
 	try {
@@ -48,8 +48,8 @@ const handleOauthCallback = async (req: Request, res: Response): Promise<void> =
 		const redirectURL = req.session.returnTo ? req.session.returnTo : '/api/spaces'
 		res.redirect(redirectURL)
 	} catch (error: any) {
-		console.error('OAuth callback error:', error.response?.data || error.message || error)
-		respondError(res, 'Failed to exchange code for token', 500)
+		console.error('OAuth callback token exchange error:', error.message || error)
+		next(new AppError(error.message || 'Failed to exchange code for token', error.status))
 	}
 }
 

@@ -1,21 +1,24 @@
 import { expect } from 'chai'
 import sinon, { SinonStub } from 'sinon'
 import authController from '../../src/controllers/auth.controller'
-import { Request, Response } from 'express'
+import { Request, Response, NextFunction } from 'express'
 import * as exchangeCodeForToken from '../../src/utils/exchangeCodeForToken'
 import '../../types/session'
 import { expectErrorResponse } from '../helpers/assertResponses'
 import { buildErrorResponseFormat } from '../../src/utils/respond'
 import { mockTokenResponse } from '../fixtures/mockTokenResponse'
+import { AppError } from '../../src/utils/appErrorClass'
 
 describe('authController.redirectToAtlassian', () => {
 	let res: Partial<Response>
 	let redirectStub: SinonStub
+
 	beforeEach(() => {
 		process.env.CLIENT_ID = 'test-client-id'
 		process.env.REDIRECT_URI = 'http://localhost:3000/callback'
 
 		redirectStub = sinon.stub()
+
 		res = {
 			redirect: redirectStub,
 		}
@@ -109,6 +112,11 @@ describe('authController.redirectToAtlassian', () => {
 
 describe('authController.handleOauthCallback', () => {
 	let req
+	let next: sinon.SinonStub
+
+	beforeEach(() => {
+		next = sinon.stub()
+	})
 
 	afterEach(() => {
 		sinon.restore()
@@ -128,46 +136,43 @@ describe('authController.handleOauthCallback', () => {
 
 		const res = { redirect: redirectStub }
 
-		await authController.handleOauthCallback(req as unknown as Request, res as unknown as Response)
+		const next = sinon.stub()
+
+		await authController.handleOauthCallback(req as unknown as Request, res as unknown as Response, next)
 
 		expect(redirectStub.calledOnceWith('/api/spaces')).to.be.true
 	})
 
-	it('should return 400 if code is missing', async () => {
-		// Stub res.send + res.status
-		const jsonStub = sinon.stub()
-		const statusStub = sinon.stub().returns({ json: jsonStub })
+	it('should call next with AppError if code is missing', async () => {
+		const req = { query: {} }
+		const res = {}
 
-		req = { query: {} }
-		const res = { status: statusStub }
+		await authController.handleOauthCallback(req as Request, res as unknown as Response, next)
 
-		await authController.handleOauthCallback(req as Request, res as unknown as Response)
-		expect(
-			jsonStub.calledWithMatch({
-				success: false,
-				message: sinon.match.string,
-			})
-		).to.be.true
+		expect(next.calledOnce).to.be.true
+
+		const error = next.firstCall.args[0]
+
+		expect(error).to.be.instanceOf(AppError)
+
+		expect(error).to.have.property('message').that.is.a('string')
+		expect(error).to.have.property('status').that.is.a('number')
 	})
 
-	it('should respond with global error if exchangeCodeForToken fails', async () => {
+	it('should call next if exchangeCodeForToken fails', async () => {
 		// This simulates a failed token exchange
-		sinon.stub(exchangeCodeForToken, 'exchangeCodeForToken').rejects(new Error(buildErrorResponseFormat('Failed to exchange authorization code for access token')))
 
-		const jsonStub = sinon.stub()
-		const statusStub = sinon.stub().returns({ json: jsonStub })
+		sinon.stub(exchangeCodeForToken, 'exchangeCodeForToken').rejects(new AppError('mock-message', 400))
 
 		const req = { query: { code: 'mock-code' }, session: {} }
-		const res = { status: statusStub }
+		const res = {}
 
-		await authController.handleOauthCallback(req as unknown as Request, res as unknown as Response)
+		await authController.handleOauthCallback(req as unknown as Request, res as unknown as Response, next)
+		expect(next.calledOnce).to.be.true
 
-		expect(statusStub.calledWith(500)).to.be.true
+		const error = next.firstCall.args[0]
 
-		const [actualError] = jsonStub.firstCall.args
-		expect(actualError).to.deep.equal({
-			success: false,
-			message: 'Failed to exchange code for token',
-		})
+		expect(error).to.have.property('message', 'mock-message')
+		expect(error).to.have.property('status', 400)
 	})
 })
