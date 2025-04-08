@@ -7,10 +7,13 @@ import { expectErrorResponse, expectSuccessResponse } from '../helpers/assertRes
 import { mockPagesResponse } from '../fixtures/mockPages'
 import '../../types/session'
 import { ATLASSIAN_API_BASE } from '../../src/constants/attlasian'
+import { AppError } from '../../src/utils/appErrorClass'
+import { assertNextCalledWithAppError } from '../helpers/assertNextCalledWithAppError'
 
 describe('pagesController.getPages', () => {
 	let req: Partial<Request>
 	let res: Partial<Response>
+	let next: sinon.SinonStub
 	let jsonStub: sinon.SinonStub
 	let statusStub: sinon.SinonStub
 	let axiosStub: sinon.SinonStub
@@ -19,6 +22,7 @@ describe('pagesController.getPages', () => {
 		jsonStub = sinon.stub()
 		statusStub = sinon.stub().returns({ json: jsonStub })
 		res = { status: statusStub, json: jsonStub }
+		next = sinon.stub()
 
 		req = {
 			session: {
@@ -38,7 +42,7 @@ describe('pagesController.getPages', () => {
 	it('should return pages on success', async () => {
 		axiosStub = sinon.stub(axios, 'get').resolves({ data: mockPagesResponse })
 
-		await pagesController.getPages(req as Request, res as Response)
+		await pagesController.getPages(req as Request, res as Response, next)
 
 		expect(statusStub.calledWith(200)).to.be.true
 		expect(jsonStub.calledWithMatch(expectSuccessResponse(mockPagesResponse))).to.be.true
@@ -48,7 +52,7 @@ describe('pagesController.getPages', () => {
 	it('should call axios with correct URL, headers, and params', async () => {
 		axiosStub = sinon.stub(axios, 'get').resolves({ data: mockPagesResponse })
 
-		await pagesController.getPages(req as Request, res as Response)
+		await pagesController.getPages(req as Request, res as Response, next)
 
 		const [url, config] = axiosStub.firstCall.args
 		expect(url).to.equal(`${ATLASSIAN_API_BASE}/ex/confluence/mock-cloud-id/wiki/rest/api/content`)
@@ -63,11 +67,10 @@ describe('pagesController.getPages', () => {
 	})
 
 	it('should handle Axios error gracefully', async () => {
-		axiosStub = sinon.stub(axios, 'get').rejects(new Error('boom'))
+		axiosStub = sinon.stub(axios, 'get').rejects(new AppError('mock-error response'))
 
-		await pagesController.getPages(req as Request, res as Response)
+		await pagesController.getPages(req as Request, res as Response, next)
 
-		expect(statusStub.calledWith(500)).to.be.true
-		expect(jsonStub.calledWithMatch(expectErrorResponse)).to.be.true
+		assertNextCalledWithAppError(next)
 	})
 })

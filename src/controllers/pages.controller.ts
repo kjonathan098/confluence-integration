@@ -1,11 +1,12 @@
 import axios from 'axios'
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { ConfluencePagesResponse } from '../../types/confluence'
 import { ATLASSIAN_API_BASE } from '../constants/attlasian'
 import { handleAxiosError } from '../utils/handleAxiosErrrors'
 import { respondSuccess } from '../utils/respond'
+import { AppError } from '../utils/appErrorClass'
 
-const getPages = async (req: Request, res: Response) => {
+const getPages = async (req: Request, res: Response, next: NextFunction) => {
 	const accessToken = req.session.accessToken
 
 	const { cloudId, spaceKey } = req.params
@@ -24,16 +25,15 @@ const getPages = async (req: Request, res: Response) => {
 			},
 		})
 		respondSuccess(res, pages.data)
-	} catch (error: any) {
-		handleAxiosError(res, error, 'An unknown error occurred while fetching pages from Confluence.')
+	} catch (err: any) {
+		return next(new AppError(err.message || 'Error fetching pages', err.status))
 	}
 }
 
 /* this is so test coverage ignore this function  */
 // istanbul ignore next
-const getPagesDev = async (req: Request, res: Response) => {
+const getPagesDev = async (req: Request, res: Response, next: NextFunction) => {
 	const accessToken = req.query.token
-	console.log(accessToken)
 	if (!accessToken) {
 		req.session.returnTo = req.originalUrl
 		res.send('no access token found')
@@ -41,12 +41,6 @@ const getPagesDev = async (req: Request, res: Response) => {
 	}
 
 	const { cloudId, spaceKey } = req.params
-
-	if (!accessToken) {
-		// TODO ADD MIDDLEWARE
-		res.redirect('/api/oauth/redirect')
-		return
-	}
 
 	try {
 		const pages = await axios.get<ConfluencePagesResponse>(`${ATLASSIAN_API_BASE}/ex/confluence/${cloudId}/wiki/rest/api/content`, {
@@ -62,8 +56,9 @@ const getPagesDev = async (req: Request, res: Response) => {
 			},
 		})
 		respondSuccess(res, pages.data)
-	} catch (error: any) {
-		handleAxiosError(res, error, 'An unknown error occurred while fetching pages from Confluence.')
+	} catch (err: any) {
+		console.error('Get Pagest Error :', err.message || err)
+		return next(new AppError(err.message || 'Error fetching pages', err.status))
 	}
 }
 

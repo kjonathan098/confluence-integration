@@ -70,14 +70,13 @@ describe('spaceController.getSpaces', () => {
 		assertNextCalledWithAppError(next)
 	})
 
-	// it('should handle API failure', async () => {
-	// 	req.session!.accessToken = 'mock-token'
+	it('should handle Axios error gracefully', async () => {
+		req.session!.accessToken = 'mock-token'
 
-	// 	sinon.stub(getAccessibleResources, 'default').throws(new Error('boom'))
+		sinon.stub(getAccessibleResources, 'default').throws(new AppError('mock-error response'))
 
-	// 	await spaceController.getSpaces(req as Request, res as Response)
+		await spaceController.getSpaces(req as Request, res as Response, next)
 
-	// 	expect(statusStub.calledWith(500)).to.be.true
-	// 	expect(jsonStub.calledWithMatch(expectErrorResponse)).to.be.true
-	// })
+		assertNextCalledWithAppError(next)
+	})
 })

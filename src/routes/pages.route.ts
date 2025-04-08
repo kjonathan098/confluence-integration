@@ -5,5 +5,5 @@ import { ensureValidAccessToken } from '../middleware/ensureValidAccessToken'
 const pagesRouter = express.Router()
 
 pagesRouter.get('/:cloudId/:spaceKey', ensureValidAccessToken, pagesController.getPages)
-pagesRouter.get('/dev/:cloudId/:spaceKey', pagesController.getPagesDev)
+pagesRouter.get('/:cloudId/:spaceKey/postman', pagesController.getPagesDev)
 export default pagesRouter
