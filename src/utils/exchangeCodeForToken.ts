@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { buildErrorResponseFormat } from './respond'
 import { AtlassianTokenResponse } from '../../types/AtlassianTokenResponse'
 
 export const exchangeCodeForToken = async (code: string): Promise<AtlassianTokenResponse> => {

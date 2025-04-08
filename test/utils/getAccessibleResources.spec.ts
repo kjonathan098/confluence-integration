@@ -46,7 +46,7 @@ describe('getAccessibleResources', () => {
 		expect(result).to.deep.equal(mockResponse)
 	})
 
-	it('should throw an error if axios fails', async () => {
+	it('should handle Axios error gracefully', async () => {
 		// Reject the stub with an error
 		const axiosError = new Error('mock-fail-message')
 		axiosGetStub.rejects(axiosError)

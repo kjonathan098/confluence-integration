@@ -2,7 +2,6 @@ import axios from 'axios'
 import { NextFunction, Request, Response } from 'express'
 import { ConfluencePagesResponse } from '../../types/confluence'
 import { ATLASSIAN_API_BASE } from '../constants/attlasian'
-import { handleAxiosError } from '../utils/handleAxiosErrrors'
 import { respondSuccess } from '../utils/respond'
 import { AppError } from '../utils/appErrorClass'
 

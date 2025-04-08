@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from 'express'
 import querystring from 'querystring'
 import { CONFLUENCE_SCOPES } from '../constants/oauth'
 import { exchangeCodeForToken } from '../utils/exchangeCodeForToken'
-import { respondError } from '../utils/respond'
 import { AppError } from '../utils/appErrorClass'
 
 const redirectToAtlassian = (req: Request, res: Response, next: NextFunction) => {

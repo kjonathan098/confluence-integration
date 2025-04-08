@@ -4,8 +4,6 @@ import authController from '../../src/controllers/auth.controller'
 import { Request, Response, NextFunction } from 'express'
 import * as exchangeCodeForToken from '../../src/utils/exchangeCodeForToken'
 import '../../types/session'
-import { expectErrorResponse } from '../helpers/assertResponses'
-import { buildErrorResponseFormat } from '../../src/utils/respond'
 import { mockTokenResponse } from '../fixtures/mockTokenResponse'
 import { AppError } from '../../src/utils/appErrorClass'
 import { assertNextCalledWithAppError } from '../helpers/assertNextCalledWithAppError'
@@ -141,6 +139,14 @@ describe('authController.handleOauthCallback', () => {
 		await authController.handleOauthCallback(req as unknown as Request, res as unknown as Response, next)
 
 		expect(redirectStub.calledOnceWith('/api/spaces')).to.be.true
+	})
+
+	it('should call next if confluence code does not exist', async () => {
+		const req = { query: {} }
+		const res = {}
+
+		await authController.handleOauthCallback(req as Request, res as unknown as Response, next)
+		assertNextCalledWithAppError(next)
 	})
 
 	it('should call next with AppError if code is missing', async () => {

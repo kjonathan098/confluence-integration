@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import getAccessibleResources from '../utils/getAccessibleResources'
 import getUserSpaces from '../utils/getUserSpaces'
-import { respondError, respondSuccess } from '../utils/respond'
+import { respondSuccess } from '../utils/respond'
 import { AppError } from '../utils/appErrorClass'
 
 const getSpaces = async (req: Request, res: Response, next: NextFunction) => {

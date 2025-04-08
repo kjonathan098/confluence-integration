@@ -1,11 +1,9 @@
 import { expect } from 'chai'
 import sinon from 'sinon'
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response } from 'express'
 import { ensureValidAccessToken } from '../../src/middleware/ensureValidAccessToken'
 import * as tokenUtils from '../../src/utils/refreshAccessToken'
 import 'express-session'
-import { Session } from 'inspector/promises'
-import { SessionData } from 'express-session'
 import { mockTokenResponse } from '../fixtures/mockTokenResponse'
 declare module 'express-session' {
 	interface SessionData {

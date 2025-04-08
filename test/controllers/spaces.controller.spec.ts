@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import sinon from 'sinon'
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response } from 'express'
 import { Session, SessionData } from 'express-session'
 import spaceController from '../../src/controllers/spaces.controller'
 import * as getAccessibleResources from '../../src/utils/getAccessibleResources'
@@ -8,7 +8,7 @@ import * as getUserSpaces from '../../src/utils/getUserSpaces'
 import mockSpaces from '../fixtures/mockspaces'
 import mockSite from '../fixtures/mockSite'
 import '../../types/session'
-import { expectErrorResponse, expectSuccessResponse } from '../helpers/assertResponses'
+import { expectSuccessResponse } from '../helpers/assertResponses'
 import { AppError } from '../../src/utils/appErrorClass'
 import { assertNextCalledWithAppError } from '../helpers/assertNextCalledWithAppError'
 
@@ -60,7 +60,7 @@ describe('spaceController.getSpaces', () => {
 		expect(jsonStub.calledWithMatch(expectSuccessResponse(mockSpaces))).to.be.true
 	})
 
-	it('should return 400 if no accessible site', async () => {
+	it('should return error if no accessible site', async () => {
 		req.session!.accessToken = 'mock-token'
 
 		sinon.stub(getAccessibleResources, 'default').resolves([])

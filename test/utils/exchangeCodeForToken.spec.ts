@@ -2,7 +2,6 @@ import { expect } from 'chai'
 import sinon from 'sinon'
 import axios from 'axios'
 import { exchangeCodeForToken } from '../../src/utils/exchangeCodeForToken'
-import { ErrorResponse } from '../../types/responseTypes'
 
 describe('exchangeCodeForToken', () => {
 	let postStub: sinon.SinonStub
@@ -46,7 +45,7 @@ describe('exchangeCodeForToken', () => {
 		expect(result).to.deep.equal(mockResponse.data)
 	})
 
-	it('should throw a global error response if axios.post fails', async () => {
+	it('should handle Axios error gracefully', async () => {
 		postStub.rejects(new Error('boom'))
 
 		try {
