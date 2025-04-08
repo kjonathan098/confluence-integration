@@ -46,9 +46,26 @@ describe('getUserSpaces', () => {
 		expect(result).to.deep.equal(mockResponse)
 	})
 
+	// it('should throw an error if axios fails', async () => {
+	// 	sinon.restore()
+	// 	sinon.stub(axios, 'get').rejects(new Error('boom'))
+
+	// 	try {
+	// 		await getUserSpaces(mockToken, mockCloudId)
+	// 		throw new Error('Expected error was not thrown')
+	// 	} catch (err: any) {
+	// 		expect(err).to.be.instanceOf(Error)
+
+	// 		const parsed = JSON.parse(err.message)
+
+	// 		// Assert that the parsed error object matches the expected error response structure
+	// 		expect(parsed).to.satisfy((obj: ErrorResponse) => sinon.match(expectErrorResponse).test(obj))
+	// 	}
+	// })
 	it('should throw an error if axios fails', async () => {
-		sinon.restore()
-		sinon.stub(axios, 'get').rejects(new Error('boom'))
+		// Reject the stub with an error
+		const axiosError = new Error('mock-fail-message')
+		axiosGetStub.rejects(axiosError)
 
 		try {
 			await getUserSpaces(mockToken, mockCloudId)
@@ -56,10 +73,7 @@ describe('getUserSpaces', () => {
 		} catch (err: any) {
 			expect(err).to.be.instanceOf(Error)
 
-			const parsed = JSON.parse(err.message)
-
-			// Assert that the parsed error object matches the expected error response structure
-			expect(parsed).to.satisfy((obj: ErrorResponse) => sinon.match(expectErrorResponse).test(obj))
+			expect(err.message).to.equal('mock-fail-message')
 		}
 	})
 })

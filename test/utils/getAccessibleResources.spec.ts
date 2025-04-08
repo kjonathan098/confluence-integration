@@ -1,10 +1,13 @@
-import { expect } from 'chai'
 import sinon from 'sinon'
 import axios from 'axios'
 import getAccessibleResources from '../../src/utils/getAccessibleResources'
 import { ATLASSIAN_API_BASE } from '../../src/constants/attlasian'
 import { expectErrorResponse } from '../helpers/assertResponses'
 import { ErrorResponse } from '../../types/responseTypes'
+import { AppError } from '../../src/utils/appErrorClass'
+import * as chai from 'chai'
+
+const expect = chai.expect
 
 describe('getAccessibleResources', () => {
 	const mockToken = 'mock-access-token'
@@ -21,7 +24,7 @@ describe('getAccessibleResources', () => {
 	let axiosGetStub: sinon.SinonStub
 
 	beforeEach(() => {
-		axiosGetStub = sinon.stub(axios, 'get').resolves({ data: mockResponse })
+		axiosGetStub = sinon.stub(axios, 'get')
 	})
 
 	afterEach(() => {
@@ -29,6 +32,9 @@ describe('getAccessibleResources', () => {
 	})
 
 	it('should call the correct Atlassian API endpoint with headers', async () => {
+		// Resolve the stub with mock data
+		axiosGetStub.resolves({ data: mockResponse })
+
 		const result = await getAccessibleResources(mockToken)
 
 		const [url, config] = axiosGetStub.firstCall.args
@@ -41,23 +47,16 @@ describe('getAccessibleResources', () => {
 	})
 
 	it('should throw an error if axios fails', async () => {
-		sinon.restore()
+		// Reject the stub with an error
+		const axiosError = new Error('mock-fail-message')
+		axiosGetStub.rejects(axiosError)
 
-		sinon.stub(axios, 'get').rejects(new Error('boom'))
-		//
 		try {
 			await getAccessibleResources('mockToken')
-			throw new Error('Expected error was not thrown') // fail the test if no error is thrown
+			throw new Error('Expected error was not thrown') // Fail the test if no error is thrown
 		} catch (err: any) {
-			const parsed = JSON.parse(err.message)
-
 			expect(err).to.be.instanceOf(Error)
-
-			// Assert that the parsed error object matches the expected error response structure,
-			// using Sinon’s matcher to allow flexible validation (e.g., message is any string).
-			// `.satisfy()` is used here because Chai's `.deep.include()` can't handle Sinon matchers.
-
-			expect(parsed).to.satisfy((obj: ErrorResponse) => sinon.match(expectErrorResponse).test(obj))
+			expect(err.message).to.equal('mock-fail-message')
 		}
 	})
 })

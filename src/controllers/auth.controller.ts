@@ -5,10 +5,9 @@ import { exchangeCodeForToken } from '../utils/exchangeCodeForToken'
 import { respondError } from '../utils/respond'
 import { AppError } from '../utils/appErrorClass'
 
-const redirectToAtlassian = (req: Request, res: Response) => {
+const redirectToAtlassian = (req: Request, res: Response, next: NextFunction) => {
 	if (!process.env.CLIENT_ID || !process.env.REDIRECT_URI) {
-		respondError(res, 'Server misconfiguration: required environment variables are missing')
-		return
+		return next(new AppError('Server misconfiguration: required environment variables are missing', 500))
 	}
 	// build the authorization URL
 	const query = querystring.stringify({
@@ -41,15 +40,15 @@ const handleOauthCallback = async (req: Request, res: Response, next: NextFuncti
 		/* test refresh token */
 		// req.session.tokenExpiry = Date.now() - 1000 // expired 1 second ago
 
-		/* to get an access_token  and use it in postman for dev mode uncomment this */
-		// res.send(access_token)
-		// return
+		// /* to get an access_token  and use it in postman for dev mode uncomment this */
+		// // res.send(access_token)
+		// // return
 
 		const redirectURL = req.session.returnTo ? req.session.returnTo : '/api/spaces'
 		res.redirect(redirectURL)
-	} catch (error: any) {
-		console.error('OAuth callback token exchange error:', error.message || error)
-		next(new AppError(error.message || 'Failed to exchange code for token', error.status))
+	} catch (err: any) {
+		console.error('OAuth callback token exchange error:', err.message || err)
+		next(new AppError(err.message || 'Failed to exchange code for token', err.status))
 	}
 }
 

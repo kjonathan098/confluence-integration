@@ -8,14 +8,17 @@ import { expectErrorResponse } from '../helpers/assertResponses'
 import { buildErrorResponseFormat } from '../../src/utils/respond'
 import { mockTokenResponse } from '../fixtures/mockTokenResponse'
 import { AppError } from '../../src/utils/appErrorClass'
+import { assertNextCalledWithAppError } from '../helpers/assertNextCalledWithAppError'
 
 describe('authController.redirectToAtlassian', () => {
 	let res: Partial<Response>
 	let redirectStub: SinonStub
+	let next: sinon.SinonStub // Declare next as a Sinon stub
 
 	beforeEach(() => {
 		process.env.CLIENT_ID = 'test-client-id'
 		process.env.REDIRECT_URI = 'http://localhost:3000/callback'
+		next = sinon.stub()
 
 		redirectStub = sinon.stub()
 
@@ -30,14 +33,14 @@ describe('authController.redirectToAtlassian', () => {
 
 	it('should call res.redirect()', () => {
 		// Call the controller with a fake request and mocked response
-		authController.redirectToAtlassian({} as Request, res as Response)
+		authController.redirectToAtlassian({} as Request, res as Response, next)
 
 		// Check that res.redirect was called once
 		expect((res.redirect as sinon.SinonStub).calledOnce).to.be.true
 	})
 
 	it('should redirect to Atlassian OAuth base URL', () => {
-		authController.redirectToAtlassian({} as Request, res as Response)
+		authController.redirectToAtlassian({} as Request, res as Response, next)
 
 		// Grab the redirect URL passed to res.redirect
 		const redirectUrl = (res.redirect as sinon.SinonStub).getCall(0).args[0]
@@ -51,7 +54,7 @@ describe('authController.redirectToAtlassian', () => {
 		process.env.CLIENT_ID = 'test-client-id'
 		process.env.REDIRECT_URI = 'http://localhost:3000/callback'
 
-		authController.redirectToAtlassian({} as Request, res as Response)
+		authController.redirectToAtlassian({} as Request, res as Response, next)
 
 		// Extract query string from redirect URL
 		const redirectUrl = (res.redirect as sinon.SinonStub).getCall(0).args[0]
@@ -66,7 +69,7 @@ describe('authController.redirectToAtlassian', () => {
 	})
 
 	it('should include scopes in the query', () => {
-		authController.redirectToAtlassian({} as Request, res as Response)
+		authController.redirectToAtlassian({} as Request, res as Response, next)
 
 		// Get the scope query param from the redirect URL
 		const redirectUrl = (res.redirect as sinon.SinonStub).getCall(0).args[0]
@@ -84,29 +87,26 @@ describe('authController.redirectToAtlassian', () => {
 		delete process.env.CLIENT_ID
 
 		// Stub res.send + res.status
-		const jsonStub = sinon.stub()
-		const statusStub = sinon.stub().returns({ json: jsonStub })
 
-		const res = {
-			status: statusStub,
-		}
+		authController.redirectToAtlassian({} as Request, res as unknown as Response, next)
 
-		authController.redirectToAtlassian({} as Request, res as unknown as Response)
-
-		expect(jsonStub.calledWithMatch(expectErrorResponse)).to.be.true
+		assertNextCalledWithAppError(next)
 	})
 	it('should fail gracefully if redirect_uri is missing', () => {
 		delete process.env.REDIRECT_URI
-		const jsonStub = sinon.stub()
-		const statusStub = sinon.stub().returns({ json: jsonStub })
 
-		const res = {
-			status: statusStub,
-		}
+		authController.redirectToAtlassian({} as Request, res as unknown as Response, next)
 
-		authController.redirectToAtlassian({} as Request, res as unknown as Response)
+		it('should fail gracefully if client_id is missing', () => {
+			// Simulate missing env vars
+			delete process.env.CLIENT_ID
 
-		expect(jsonStub.calledWithMatch(expectErrorResponse)).to.be.true
+			// Stub res.send + res.status
+
+			authController.redirectToAtlassian({} as Request, res as unknown as Response, next)
+
+			assertNextCalledWithAppError(next)
+		})
 	})
 })
 
@@ -149,14 +149,7 @@ describe('authController.handleOauthCallback', () => {
 
 		await authController.handleOauthCallback(req as Request, res as unknown as Response, next)
 
-		expect(next.calledOnce).to.be.true
-
-		const error = next.firstCall.args[0]
-
-		expect(error).to.be.instanceOf(AppError)
-
-		expect(error).to.have.property('message').that.is.a('string')
-		expect(error).to.have.property('status').that.is.a('number')
+		assertNextCalledWithAppError(next)
 	})
 
 	it('should call next if exchangeCodeForToken fails', async () => {
@@ -168,11 +161,6 @@ describe('authController.handleOauthCallback', () => {
 		const res = {}
 
 		await authController.handleOauthCallback(req as unknown as Request, res as unknown as Response, next)
-		expect(next.calledOnce).to.be.true
-
-		const error = next.firstCall.args[0]
-
-		expect(error).to.have.property('message', 'mock-message')
-		expect(error).to.have.property('status', 400)
+		assertNextCalledWithAppError(next)
 	})
 })

@@ -1,9 +1,10 @@
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import getAccessibleResources from '../utils/getAccessibleResources'
 import getUserSpaces from '../utils/getUserSpaces'
 import { respondError, respondSuccess } from '../utils/respond'
+import { AppError } from '../utils/appErrorClass'
 
-const getSpaces = async (req: Request, res: Response) => {
+const getSpaces = async (req: Request, res: Response, next: NextFunction) => {
 	const access_token = req.session.accessToken!
 
 	try {
@@ -12,8 +13,7 @@ const getSpaces = async (req: Request, res: Response) => {
 		const site = accessibleRes[0] // For this exercise, we only use the first accessible site
 
 		if (!site) {
-			respondError(res, 'No accessible Confluence sites found', 400)
-			return
+			return next(new AppError('No accessible Confluence sites found', 404))
 		}
 
 		const cloudId = site.id
@@ -23,18 +23,17 @@ const getSpaces = async (req: Request, res: Response) => {
 		respondSuccess(res, spaces, 200)
 	} catch (err: any) {
 		console.error('Error:', err.response?.data || err.message)
-		respondError(res, 'Error fetching spaces', 500)
+		return next(new AppError(err.message || 'Error fetching spaces', err.status))
 	}
 }
 
 /* this is so test coverage ignore this function  */
 // istanbul ignore next
-const getSpacesPostman = async (req: Request, res: Response) => {
+const getSpacesPostman = async (req: Request, res: Response, next: NextFunction) => {
 	const accessToken = req.query.token as string
 
 	if (!accessToken) {
-		respondError(res, 'access token not in query', 400)
-		return
+		return next(new AppError('access token not in query', 400))
 	}
 
 	try {
@@ -43,9 +42,7 @@ const getSpacesPostman = async (req: Request, res: Response) => {
 		const site = accessibleRes[0]
 
 		if (!site) {
-			respondError(res, 'No accessible Confluence sites found', 404)
-
-			return
+			return next(new AppError('No accessible Confluence sites found', 404))
 		}
 
 		const cloudId = site.id
@@ -57,9 +54,7 @@ const getSpacesPostman = async (req: Request, res: Response) => {
 		return
 	} catch (err: any) {
 		console.error('Error:', err.response?.data || err.message)
-
-		//TODO Use global resp
-		respondError(res, 'Error fetching spaces', 500)
+		return next(new AppError(err.message || 'Error fetching spaces', err.status))
 	}
 }
 
